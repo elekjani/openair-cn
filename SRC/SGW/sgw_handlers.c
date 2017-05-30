@@ -260,7 +260,7 @@ sgw_handle_sgi_endpoint_created (
      * * * *  we set the cause value regarding the S1-U bearer establishment result status.
      */
     if (resp_pP->status == SGI_STATUS_OK) {
-      uint32_t                                address = sgw_app.sgw_ip_address_S1u_S12_S4_up;
+      uint32_t                                address = sgw_app.sgw_ip_address_S1u_S12_S4_up_public;
 
       create_session_response_p->bearer_contexts_created.bearer_contexts[0].s1u_sgw_fteid.teid = resp_pP->sgw_S1u_teid;
       create_session_response_p->bearer_contexts_created.bearer_contexts[0].s1u_sgw_fteid.interface_type = S1_U_SGW_GTP_U;

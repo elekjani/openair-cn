@@ -78,6 +78,7 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
   config_setting_t                       *setting_sgw = NULL;
   char                                   *sgw_if_name_S1u_S12_S4_up = NULL;
   char                                   *S1u_S12_S4_up = NULL;
+  char                                   *S1u_S12_S4_up_public = NULL;
   char                                   *sgw_if_name_S5_S8_up = NULL;
   char                                   *S5_S8_up = NULL;
   char                                   *sgw_if_name_S11 = NULL;
@@ -194,6 +195,7 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
            && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP, (const char **)&S1u_S12_S4_up)
            && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S5_S8_UP, (const char **)&sgw_if_name_S5_S8_up)
            && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S5_S8_UP, (const char **)&S5_S8_up)
+           && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP_PUBLIC, (const char **)&S1u_S12_S4_up_public)
            && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_INTERFACE_NAME_FOR_S11, (const char **)&sgw_if_name_S11)
            && config_setting_lookup_string (subsetting, SGW_CONFIG_STRING_SGW_IPV4_ADDRESS_FOR_S11, (const char **)&S11)
           )
@@ -223,6 +225,19 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
         in_addr_var.s_addr = config_pP->ipv4.S5_S8_up;
         OAILOG_INFO (LOG_SPGW_APP, "Parsing configuration file found S5_S8_up: %s/%d on %s\n",
                        inet_ntoa (in_addr_var), config_pP->ipv4.netmask_S5_S8_up, bdata(config_pP->ipv4.if_name_S5_S8_up));
+
+        cidr = bfromcstr (S1u_S12_S4_up_public);
+        list = bsplit (cidr, '/');
+        AssertFatal(2 == list->qty, "Bad CIDR address %s", bdata(cidr));
+        address = list->entry[0];
+        mask    = list->entry[1];
+        IPV4_STR_ADDR_TO_INT_NWBO (bdata(address), config_pP->ipv4.S1u_S12_S4_up_public, "BAD IP ADDRESS FORMAT FOR S5_S8 !\n");
+        config_pP->ipv4.netmask_S1u_S12_S4_up = atoi ((const char*)mask->data);
+        bstrListDestroy(list);
+        in_addr_var.s_addr = config_pP->ipv4.S1u_S12_S4_up_public;
+        OAILOG_INFO (LOG_SPGW_APP, "Parsing configuration file found S1u_S12_S4_up_public: %s/%d on %s\n",
+                       inet_ntoa (in_addr_var), config_pP->ipv4.netmask_S1u_S12_S4_up, bdata(config_pP->ipv4.if_name_S1u_S12_S4_up));
+
 
         config_pP->ipv4.if_name_S11 = bfromcstr (sgw_if_name_S11);
         cidr = bfromcstr (S11);
