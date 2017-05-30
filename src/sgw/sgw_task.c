@@ -186,6 +186,7 @@ int sgw_init (spgw_config_t *spgw_config_pP)
 
   sgw_app.sgw_if_name_S1u_S12_S4_up    = bstrcpy(spgw_config_pP->sgw_config.ipv4.if_name_S1u_S12_S4_up);
   sgw_app.sgw_ip_address_S1u_S12_S4_up = spgw_config_pP->sgw_config.ipv4.S1u_S12_S4_up;
+  sgw_app.sgw_ip_address_S1u_S12_S4_up_public = spgw_config_pP->sgw_config.ipv4.S1u_S12_S4_up_public;
   sgw_app.sgw_if_name_S11_S4           = bstrcpy(spgw_config_pP->sgw_config.ipv4.if_name_S11);
   sgw_app.sgw_ip_address_S11_S4        = spgw_config_pP->sgw_config.ipv4.S11;
 
