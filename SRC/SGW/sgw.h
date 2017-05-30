@@ -43,8 +43,9 @@
 
 typedef struct sgw_app_s {
 
-  bstring        sgw_if_name_S1u_S12_S4_up;
+  bstring    sgw_if_name_S1u_S12_S4_up;
   struct in_addr sgw_ip_address_S1u_S12_S4_up;
+  struct in_addr sgw_ip_address_S1u_S12_S4_up_public;
 
   bstring        sgw_if_name_S11_S4;
   struct in_addr sgw_ip_address_S11_S4;
