@@ -43,6 +43,8 @@ typedef enum {
   PF_ID_DNS,
   PF_ID_PING,
   PF_ID_DEFAULT,
+  PF_ID_INTERWORKING_EPC1,
+  PF_ID_INTERWORKING_EPC2,
   PF_ID_MAX
 } pf_id_t;
 
@@ -64,6 +66,7 @@ typedef enum {
   SDF_ID_NGBR_DEFAULT_PREMIUM,
   SDF_ID_NGBR_DEFAULT,
   SDF_ID_TEST_PING,
+  SDF_ID_INTERWORKING,
   SDF_ID_MAX
 } sdf_id_t;
 

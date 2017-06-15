@@ -193,6 +193,52 @@ int pgw_pcef_emulation_init (const pgw_config_t * const pgw_config_p)
     return RETURNerror;
   }
 
+  pcc_rule = calloc (1, sizeof (pcc_rule_t));
+  pcc_rule->name = bfromcstr("INTERWORKING_RULE");
+  pcc_rule->is_activated = false;
+  pcc_rule->sdf_id  = SDF_ID_INTERWORKING;
+  pcc_rule->bearer_qos.pci = PRE_EMPTION_CAPABILITY_ENABLED;
+  pcc_rule->bearer_qos.pl  = 2;
+  pcc_rule->bearer_qos.pvi = PRE_EMPTION_VULNERABILITY_DISABLED;
+  pcc_rule->bearer_qos.qci = 1;
+  pcc_rule->bearer_qos.gbr.br_ul = 1000; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.gbr.br_dl = 1000; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.mbr.br_ul = 1000; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.mbr.br_dl = 1000; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->sdf_template.sdf_filter[0].identifier = PF_ID_INTERWORKING_EPC1;
+  pcc_rule->sdf_template.sdf_filter[0].spare = 0;
+  pcc_rule->sdf_template.sdf_filter[0].direction = TRAFFIC_FLOW_TEMPLATE_BIDIRECTIONAL;
+  pcc_rule->sdf_template.sdf_filter[0].eval_precedence = 2;
+  pcc_rule->sdf_template.sdf_filter[0].length = 9;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.flags = TRAFFIC_FLOW_TEMPLATE_IPV4_REMOTE_ADDR_FLAG;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[0].addr = 212;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[1].addr = 16;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[2].addr = 0;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[3].addr = 0;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[0].mask = 255;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[1].mask = 255;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[2].mask = 0;
+  pcc_rule->sdf_template.sdf_filter[0].packetfiltercontents.ipv4remoteaddr[3].mask = 0;
+  pcc_rule->sdf_template.sdf_filter[1].identifier = PF_ID_INTERWORKING_EPC2;
+  pcc_rule->sdf_template.sdf_filter[1].spare = 0;
+  pcc_rule->sdf_template.sdf_filter[1].direction = TRAFFIC_FLOW_TEMPLATE_BIDIRECTIONAL;
+  pcc_rule->sdf_template.sdf_filter[1].eval_precedence = 2;
+  pcc_rule->sdf_template.sdf_filter[1].length = 9;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.flags = TRAFFIC_FLOW_TEMPLATE_IPV4_REMOTE_ADDR_FLAG;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[0].addr = 213;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[1].addr = 16;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[2].addr = 0;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[3].addr = 0;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[0].mask = 255;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[1].mask = 255;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[2].mask = 0;
+  pcc_rule->sdf_template.sdf_filter[1].packetfiltercontents.ipv4remoteaddr[3].mask = 0;
+  pcc_rule->sdf_template.number_of_packet_filters = 2;
+  hrc = hashtable_ts_insert(pgw_app.deactivated_predefined_pcc_rules, pcc_rule->sdf_id, pcc_rule);
+  if (HASH_TABLE_OK != hrc) {
+    return RETURNerror;
+  }
+
 
   // really necessary ?
   pcc_rule = calloc (1, sizeof (pcc_rule_t));
@@ -203,10 +249,10 @@ int pgw_pcef_emulation_init (const pgw_config_t * const pgw_config_p)
   pcc_rule->bearer_qos.pl  = 15;
   pcc_rule->bearer_qos.pvi = PRE_EMPTION_VULNERABILITY_ENABLED;
   pcc_rule->bearer_qos.qci = 9;
-  pcc_rule->bearer_qos.gbr.br_ul = 0; // kilobits per second (1 kbps = 1000 bps)
-  pcc_rule->bearer_qos.gbr.br_dl = 0; // kilobits per second (1 kbps = 1000 bps)
-  pcc_rule->bearer_qos.mbr.br_ul = 1000; // kilobits per second (1 kbps = 1000 bps)
-  pcc_rule->bearer_qos.mbr.br_dl = 1000; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.gbr.br_ul = 10; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.gbr.br_dl = 10; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.mbr.br_ul = 10; // kilobits per second (1 kbps = 1000 bps)
+  pcc_rule->bearer_qos.mbr.br_dl = 10; // kilobits per second (1 kbps = 1000 bps)
   pcc_rule->sdf_template.sdf_filter[0].identifier = PF_ID_DEFAULT;
   pcc_rule->sdf_template.sdf_filter[0].spare = 0;
   pcc_rule->sdf_template.sdf_filter[0].direction = TRAFFIC_FLOW_TEMPLATE_DOWNLINK_ONLY;
