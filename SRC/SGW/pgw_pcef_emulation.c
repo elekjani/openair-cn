@@ -229,6 +229,7 @@ int pgw_pcef_emulation_init (const pgw_config_t * const pgw_config_p)
     return RETURNerror;
   }
 
+  /*
   for (int i = 0; i < (SDF_ID_MAX-1); i++) {
     if (pgw_config_p->pcef.preload_static_sdf_identifiers[i]) {
       pgw_pcef_emulation_apply_rule(pgw_config_p->pcef.preload_static_sdf_identifiers[i], pgw_config_p);
@@ -239,6 +240,7 @@ int pgw_pcef_emulation_init (const pgw_config_t * const pgw_config_p)
   if (pgw_config_p->pcef.automatic_push_dedicated_bearer_sdf_identifier) {
     pgw_pcef_emulation_apply_rule(pgw_config_p->pcef.automatic_push_dedicated_bearer_sdf_identifier, pgw_config_p);
   }
+  */
 
   return rc;
 }
@@ -373,12 +375,12 @@ int pgw_pcef_get_sdf_parameters (const sdf_id_t sdf_id, bearer_qos_t * const bea
   hashtable_rc_t hrc = hashtable_ts_get(pgw_app.deactivated_predefined_pcc_rules, sdf_id, (void**)&pcc_rule);
 
   if (HASH_TABLE_OK == hrc) {
-    if (pcc_rule->is_activated) {
+    //if (pcc_rule->is_activated) {
       memcpy(bearer_qos, &pcc_rule->bearer_qos, sizeof(pcc_rule->bearer_qos));
       memcpy(packet_filter, &pcc_rule->sdf_template.sdf_filter, sizeof(pcc_rule->sdf_template.sdf_filter[0]) * pcc_rule->sdf_template.number_of_packet_filters);
      *num_pf = pcc_rule->sdf_template.number_of_packet_filters;
       return RETURNok;
-    }
+    //}
   }
   memset(bearer_qos, 0, sizeof(*bearer_qos));
   memset(packet_filter, 0, sizeof(*packet_filter));

@@ -610,14 +610,40 @@ sgw_handle_sgi_endpoint_updated (
       if (spgw_config.pgw_config.use_gtp_kernel_module) {
         rv = gtp_mod_kernel_tunnel_add(ue, enb, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up, eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->eps_bearer_id);
         bstring marking_command = bformat(
-            "iptables -A POSTROUTING -t mangle --out-interface gtp0 --dest %"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/32 -m mark --mark 0x%04X -j MARK --set-mark %d",
-            NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr), SDF_ID_NGBR_DEFAULT, eps_bearer_ctxt_p->eps_bearer_id);
+            "iptables -A POSTROUTING -t mangle --out-interface gtp0 --dest %"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/32 -j MARK --set-mark %d",
+            NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr), eps_bearer_ctxt_p->eps_bearer_id);
         async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
         bdestroy_wrapper(&marking_command);
         AssertFatal((TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf), "Too much flows aggregated in this Bearer (should not happen => see MME)");
         if (rv < 0) {
           OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TUNNEL err=%d\n", rv);
         }
+
+        bearer_qos_t          eps_bearer_qos;
+        packet_filter_t packetfilter;
+        uint8_t number_of_packet_filters = 0;
+        rv = pgw_pcef_get_sdf_parameters (SDF_ID_NGBR_DEFAULT,
+            &eps_bearer_qos, &packetfilter, &number_of_packet_filters);
+        if (rv < 0) {
+          OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TC Class err=%d\n", rv);
+        }
+
+        marking_command = bformat(
+            "tc class add dev %s parent 1: classid 1:%d htb rate %dkbps ceil %dkbps",
+            spgw_config.pgw_config.ipv4.if_name_SGI->data,
+            eps_bearer_ctxt_p->eps_bearer_id,
+            eps_bearer_qos.mbr.br_ul,
+            eps_bearer_qos.mbr.br_ul);
+        async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
+        bdestroy_wrapper(&marking_command);
+
+        marking_command = bformat(
+            "tc filter add dev %s parent 1: protocol ip prio 65535 u32 match ip src %"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/32 flowid 1:%d",
+            spgw_config.pgw_config.ipv4.if_name_SGI->data,
+            NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr),
+            eps_bearer_ctxt_p->eps_bearer_id);
+        async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
+        bdestroy_wrapper(&marking_command);
       }
 
       if (TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf) {
@@ -1158,11 +1184,71 @@ sgw_handle_create_bearer_response (
                       OAILOG_INFO (LOG_SPGW_APP, "Failed to setup EPS bearer id %u tunnel " TEID_FMT " (eNB) <-> (SGW) " TEID_FMT "\n",
                           eps_bearer_ctxt_p->eps_bearer_id, eps_bearer_ctxt_p->enb_teid_S1u, eps_bearer_ctxt_p->s_gw_teid_S1u_S12_S4_up);
                     } else {
+                      bearer_qos_t          eps_bearer_qos;
+                      packet_filter_t packetfilter;
+                      uint8_t number_of_packet_filters = 0;
+                      rv = pgw_pcef_get_sdf_parameters (pgw_ni_cbr_proc->sdf_id,
+                          &eps_bearer_qos, &packetfilter, &number_of_packet_filters);
+                      if (rv < 0) {
+                        OAILOG_ERROR (LOG_SPGW_APP, "ERROR in setting up TC Class err=%d\n", rv);
+                      }
 
                       bstring marking_command = bformat(
-                          "iptables -A POSTROUTING -t mangle --out-interface gtp0 --dest %"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/32 -m mark --mark 0x%04X -j MARK --set-mark %d",
-                          NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr), pgw_ni_cbr_proc->sdf_id, eps_bearer_ctxt_p->eps_bearer_id);
+                          "tc class add dev %s parent 1: classid 1:%d htb rate %dkbps ceil %dkbps",
+                          spgw_config.pgw_config.ipv4.if_name_SGI->data,
+                          eps_bearer_ctxt_p->eps_bearer_id,
+                          eps_bearer_qos.mbr.br_ul,
+                          eps_bearer_qos.mbr.br_ul);
                       async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
+                      bdestroy_wrapper(&marking_command);
+
+
+                      marking_command = bformat(
+                          "iptables -A POSTROUTING -t mangle --out-interface gtp0 "
+                          "--dest %u.%u.%u.%u/32 --source %d.%d.%d.%d/%d.%d.%d.%d "
+                          "-j MARK --set-mark %d",
+                          NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr),
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[0].addr, packetfilter.packetfiltercontents.ipv4remoteaddr[1].addr,
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[2].addr, packetfilter.packetfiltercontents.ipv4remoteaddr[3].addr,
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[0].mask, packetfilter.packetfiltercontents.ipv4remoteaddr[1].mask,
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[2].mask, packetfilter.packetfiltercontents.ipv4remoteaddr[3].mask,
+                          eps_bearer_ctxt_p->eps_bearer_id);
+                      async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
+                      bdestroy_wrapper(&marking_command);
+
+                      int mmask = 0;
+                      {
+                        uint8_t j, mask_bit;
+                        for(j = 0; j != 32; j++) {
+                          mask_bit = packetfilter.packetfiltercontents.ipv4remoteaddr[3 - (j / 8)].mask >> (j % 8) & 0x01;
+                          if(!mmask && mask_bit)
+                            mmask = 32 - j;
+                          else if(mmask && !mask_bit) {
+                              OAILOG_ERROR (LOG_SPGW_APP, "Invalid IP mask in TFT %u.%u.%u.%u (%d bit)",
+                                  packetfilter.packetfiltercontents.ipv4remoteaddr[0].mask,
+                                  packetfilter.packetfiltercontents.ipv4remoteaddr[1].mask,
+                                  packetfilter.packetfiltercontents.ipv4remoteaddr[2].mask,
+                                  packetfilter.packetfiltercontents.ipv4remoteaddr[3].mask,
+                                  mmask);
+                              break;
+                          }
+                        }
+                      }
+
+                      marking_command = bformat(
+                          "tc filter add dev %s parent 1: protocol ip prio 1 "
+                          "u32 match ip src %u.%u.%u.%u/32 "
+                          "match ip dst %u.%u.%u.%u/%u flowid 1:%d",
+                          spgw_config.pgw_config.ipv4.if_name_SGI->data,
+                          NIPADDR(eps_bearer_ctxt_p->paa.ipv4_address.s_addr),
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[0].addr,
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[1].addr,
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[2].addr,
+                          packetfilter.packetfiltercontents.ipv4remoteaddr[3].addr,
+                          mmask,
+                          eps_bearer_ctxt_p->eps_bearer_id);
+                      async_system_command (TASK_SPGW_APP, false, bdata(marking_command));
+                      bdestroy_wrapper(&marking_command);
 
                       AssertFatal((TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf), "Too much flows aggregated in this Bearer (should not happen => see MME)");
                       if (TRAFFIC_FLOW_TEMPLATE_NB_PACKET_FILTERS_MAX > eps_bearer_ctxt_p->num_sdf) {
