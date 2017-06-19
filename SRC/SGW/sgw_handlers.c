@@ -1154,7 +1154,7 @@ int sgw_no_pcef_create_dedicated_bearer(s11_teid_t teid, const sdf_id_t sdf_id)
       // Put in cache the sgw_eps_bearer_entry_t
       // TODO create a procedure with a time out
       pgw_ni_cbr_proc_t* pgw_ni_cbr_proc    = pgw_create_procedure_create_bearer(s_plus_p_gw_eps_bearer_ctxt_info_p);
-      pgw_ni_cbr_proc->sdf_id               = spgw_config.pgw_config.pcef.automatic_push_dedicated_bearer_sdf_identifier;
+      pgw_ni_cbr_proc->sdf_id               = sdf_id;
       pgw_ni_cbr_proc->teid                 = teid;
       struct sgw_eps_bearer_entry_wrapper_s *sgw_eps_bearer_entry_wrapper = calloc(1, sizeof(*sgw_eps_bearer_entry_wrapper));
       sgw_eps_bearer_entry_wrapper->sgw_eps_bearer_entry = eps_bearer_ctxt_p;

@@ -52,19 +52,19 @@ static void pcrf_exit(void);
 
 static bool pcrf_lookup_context (
   const hash_key_t keyP,
-  void *const s_plus_p_gw_eps_bearer_context_information_v,
+  void * s_plus_p_gw_eps_bearer_context_information_v,
   void *ue_ip,
   void **context) {
 
   uint8_t i;
-  uint32_t ipv4_addr = *((uint32_t*)ue_ip);
-  struct s_plus_p_gw_eps_bearer_context_information_s *const s_plus_p_gw_eps_bearer_context_information_p =
-    (struct s_plus_p_gw_eps_bearer_context_information_s *)s_plus_p_gw_eps_bearer_context_information_v;
+  uint32_t *ipv4_addr = (uint32_t*)ue_ip;
+  struct s_plus_p_gw_eps_bearer_context_information_s* s_plus_p_gw_eps_bearer_context_information_p =
+    (struct s_plus_p_gw_eps_bearer_context_information_s*)s_plus_p_gw_eps_bearer_context_information_v;
 
   sgw_eps_bearer_ctxt_t **sgw_eps_bearers = s_plus_p_gw_eps_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers_array;
   for(i = 0; i != BEARERS_PER_UE; i++) {
-    if(sgw_eps_bearers[i]->paa.ipv4_address.s_addr == ipv4_addr) {
-      *context = s_plus_p_gw_eps_bearer_context_information_p;
+    if(sgw_eps_bearers[i] != NULL && sgw_eps_bearers[i]->paa.ipv4_address.s_addr == *ipv4_addr) {
+      *context = s_plus_p_gw_eps_bearer_context_information_v;
       return true;
     }
   }
@@ -100,13 +100,13 @@ static void* pcrf_intertask_interface (void *args_p) {
 
         uint32_t ue_ip = *((uint32_t*)udp_data_ind->buffer);
         uint8_t sdf_id = *((uint8_t*)(udp_data_ind->buffer + sizeof(uint32_t)));
-        OAILOG_DEBUG(LOG_PCRF, "Looking SPGW context for IP: %u.%u.%u.%u and pushing %u SDF\n", HIPADDR(ue_ip), sdf_id);
+        OAILOG_DEBUG(LOG_PCRF, "Looking for SPGW context for IP: %u.%u.%u.%u and pushing %u SDF\n", NIPADDR(ue_ip), sdf_id);
 
-        struct s_plus_p_gw_eps_bearer_context_information_s *const s_plus_p_gw_eps_bearer_context_information_p;
+        struct s_plus_p_gw_eps_bearer_context_information_s *s_plus_p_gw_eps_bearer_context_information_p = NULL;
         hashtable_ts_apply_callback_on_elements (
             sgw_app.s11_bearer_context_information_hashtable,
             pcrf_lookup_context,
-            &ue_ip,
+            (void*)&ue_ip,
             (void**)&s_plus_p_gw_eps_bearer_context_information_p);
 
         if (s_plus_p_gw_eps_bearer_context_information_p == NULL) {
@@ -114,6 +114,8 @@ static void* pcrf_intertask_interface (void *args_p) {
           break;
         }
 
+        OAILOG_DEBUG(LOG_PCRF, "Found SPGW context with TEID: %u", 
+            s_plus_p_gw_eps_bearer_context_information_p->sgw_eps_bearer_context_information.s_gw_teid_S11_S4);
         sgw_no_pcef_create_dedicated_bearer(
             s_plus_p_gw_eps_bearer_context_information_p->sgw_eps_bearer_context_information.s_gw_teid_S11_S4,
             sdf_id);
