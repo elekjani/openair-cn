@@ -129,6 +129,7 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
     config_pP->log_config.nas_log_level      = MAX_LOG_LEVEL;
     config_pP->log_config.mme_app_log_level  = MAX_LOG_LEVEL;
     config_pP->log_config.spgw_app_log_level = MAX_LOG_LEVEL;
+    config_pP->log_config.pcrf_log_level     = MAX_LOG_LEVEL;
     config_pP->log_config.s11_log_level      = MAX_LOG_LEVEL;
     config_pP->log_config.s6a_log_level      = MAX_LOG_LEVEL;
     config_pP->log_config.util_log_level     = MAX_LOG_LEVEL;
@@ -175,6 +176,10 @@ int sgw_config_parse_file (sgw_config_t * config_pP)
 
       if (config_setting_lookup_string (subsetting, LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL, (const char **)&astring)) {
         config_pP->log_config.spgw_app_log_level = OAILOG_LEVEL_STR2INT (astring);
+      }
+
+      if (config_setting_lookup_string (subsetting, LOG_CONFIG_STRING_PCRF_LOG_LEVEL, (const char **)&astring)) {
+        config_pP->log_config.pcrf_log_level = OAILOG_LEVEL_STR2INT (astring);
       }
 
       if (config_setting_lookup_string (subsetting, LOG_CONFIG_STRING_S11_LOG_LEVEL, (const char **)&astring)) {
@@ -307,6 +312,7 @@ void sgw_config_display (sgw_config_t * config_p)
   OAILOG_INFO (LOG_SPGW_APP, "    GTPV1-U log level....: %s\n", OAILOG_LEVEL_INT2STR(config_p->log_config.gtpv1u_log_level));
   OAILOG_INFO (LOG_SPGW_APP, "    GTPV2-C log level....: %s\n", OAILOG_LEVEL_INT2STR(config_p->log_config.gtpv2c_log_level));
   OAILOG_INFO (LOG_SPGW_APP, "    S/P-GW APP log level.: %s\n", OAILOG_LEVEL_INT2STR(config_p->log_config.spgw_app_log_level));
+  OAILOG_INFO (LOG_SPGW_APP, "    PCRF APP log level...: %s\n", OAILOG_LEVEL_INT2STR(config_p->log_config.pcrf_log_level));
   OAILOG_INFO (LOG_SPGW_APP, "    S11 log level........: %s\n", OAILOG_LEVEL_INT2STR(config_p->log_config.s11_log_level));
   OAILOG_INFO (LOG_SPGW_APP, "    UTIL log level.......: %s\n", OAILOG_LEVEL_INT2STR(config_p->log_config.util_log_level));
   OAILOG_INFO (LOG_SPGW_APP, "    MSC log level........: %s (MeSsage Chart)\n", OAILOG_LEVEL_INT2STR(config_p->log_config.msc_log_level));

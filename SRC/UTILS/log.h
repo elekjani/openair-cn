@@ -103,6 +103,7 @@ extern int fd_g_debug_lvl;
 #define LOG_CONFIG_STRING_SECU_LOG_LEVEL                 "SECU_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SCTP_LOG_LEVEL                 "SCTP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL             "SPGW_APP_LOG_LEVEL"
+#define LOG_CONFIG_STRING_PCRF_LOG_LEVEL                 "PCRF_LOG_LEVEL"
 #define LOG_CONFIG_STRING_SPGW_APP_LOG_LEVEL             "SPGW_APP_LOG_LEVEL"
 #define LOG_CONFIG_STRING_OUTPUT_SYSLOG                  "SYSLOG"
 #define LOG_CONFIG_STRING_OUTPUT_THREAD_SAFE             "THREAD_SAFE"
@@ -191,6 +192,7 @@ typedef struct log_config_s {
   log_level_t   nas_log_level;      /*!< \brief NAS ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   mme_app_log_level;  /*!< \brief MME-APP ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   spgw_app_log_level; /*!< \brief SP-GW ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
+  log_level_t   pcrf_log_level;     /*!< \brief PCRF ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   s11_log_level;      /*!< \brief S11 ITTI task log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   s6a_log_level;      /*!< \brief S6a layer log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
   log_level_t   secu_log_level;      /*!< \brief LTE security log level starting from OAILOG_LEVEL_EMERGENCY up to MAX_LOG_LEVEL (no log) */
