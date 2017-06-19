@@ -864,7 +864,8 @@ sgw_handle_modify_bearer_request (
         if (RETURNok == rv) {
           if (spgw_config.pgw_config.pcef.automatic_push_dedicated_bearer_sdf_identifier) {
             // upon S/P-GW config, establish a dedicated radio bearer
-            sgw_no_pcef_create_dedicated_bearer(modify_bearer_pP->teid);
+            sgw_no_pcef_create_dedicated_bearer(modify_bearer_pP->teid,
+                spgw_config.pgw_config.pcef.automatic_push_dedicated_bearer_sdf_identifier);
           }
         }
       }
@@ -1101,7 +1102,7 @@ sgw_handle_release_access_bearers_request (
 
 //------------------------------------------------------------------------------
 // hardcoded parameters as a starting point
-int sgw_no_pcef_create_dedicated_bearer(s11_teid_t teid)
+int sgw_no_pcef_create_dedicated_bearer(s11_teid_t teid, const sdf_id_t sdf_id)
 {
   OAILOG_FUNC_IN(LOG_SPGW_APP);
   int                                    rc = RETURNerror;
@@ -1133,7 +1134,7 @@ int sgw_no_pcef_create_dedicated_bearer(s11_teid_t teid)
                     s_plus_p_gw_eps_bearer_ctxt_info_p->sgw_eps_bearer_context_information.pdn_connection.default_bearer);
 
       uint8_t number_of_packet_filters = 0;
-      rc = pgw_pcef_get_sdf_parameters (spgw_config.pgw_config.pcef.automatic_push_dedicated_bearer_sdf_identifier,
+      rc = pgw_pcef_get_sdf_parameters (sdf_id,
           &eps_bearer_ctxt_p->eps_bearer_qos,
           &eps_bearer_ctxt_p->tft.packetfilterlist.createnewtft[0],
           &number_of_packet_filters);
