@@ -89,17 +89,17 @@ static void* pcrf_intertask_interface (void *args_p) {
         break;
 
       case UDP_DATA_IND:
-        OAILOG_DEBUG(LOG_PCRF, "Got UDP message.");
+        OAILOG_DEBUG(LOG_PCRF, "Got UDP message.\n");
 
         udp_data_ind_t *udp_data_ind = &received_message_p->ittiMsg.udp_data_ind;
 
         if (udp_data_ind->buffer_length < 4){
-          OAILOG_ERROR(LOG_PCRF, "Invalid PCRF controll message");
+          OAILOG_ERROR(LOG_PCRF, "Invalid PCRF controll message\n");
           break;
         }
 
         uint32_t ue_ip = *((uint32_t*)udp_data_ind->buffer);
-        OAILOG_DEBUG(LOG_PCRF, "IP: %u.%u.%u.%u", HIPADDR(ue_ip));
+        OAILOG_DEBUG(LOG_PCRF, "Looking SPGW context for IP: %u.%u.%u.%u\n", HIPADDR(ue_ip));
 
         struct s_plus_p_gw_eps_bearer_context_information_s *const s_plus_p_gw_eps_bearer_context_information_p;
         hashtable_ts_apply_callback_on_elements (
@@ -108,8 +108,14 @@ static void* pcrf_intertask_interface (void *args_p) {
             &ue_ip,
             (void**)&s_plus_p_gw_eps_bearer_context_information_p);
 
+        if (s_plus_p_gw_eps_bearer_context_information_p == NULL) {
+          OAILOG_ERROR(LOG_PCRF, "No context found\n");
+          break;
+        }
+
         sgw_no_pcef_create_dedicated_bearer(
             s_plus_p_gw_eps_bearer_context_information_p->sgw_eps_bearer_context_information.s_gw_teid_S11_S4);
+
         break;
 
       default:
