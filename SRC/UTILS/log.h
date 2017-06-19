@@ -135,6 +135,7 @@ typedef enum {
 typedef enum {
   MIN_LOG_PROTOS = 0,
   LOG_UDP = MIN_LOG_PROTOS,
+  LOG_PCRF,
   LOG_GTPV1U,
   LOG_GTPV2C,
   LOG_SCTP,

@@ -393,6 +393,7 @@ include_directories("${OPENAIRCN_DIR}/SRC/UTILS/HASHTABLE")
 include_directories("${OPENAIRCN_DIR}/SRC/UTILS/MSC")
 include_directories("${OPENAIRCN_DIR}/SRC/UTILS/BSTR")
 include_directories("${OPENAIRCN_DIR}/SRC/SGW")
+include_directories("${OPENAIRCN_DIR}/SRC/PCRF")
 include_directories("${OPENAIRCN_DIR}/SRC/MME_APP")
 include_directories("${OPENAIRCN_DIR}/SRC/S6A")
 include_directories("${OPENAIRCN_DIR}/SRC")
@@ -598,6 +599,11 @@ add_library (SGW
   ${SGW_DIR}/sgw_handlers.c
   ${SGW_DIR}/sgw_task.c
   ${SGW_DIR}/spgw_config.c
+  )
+
+set(PCRF_DIR ${OPENAIRCN_DIR}/SRC/PCRF)
+add_library (PCRF
+  ${PCRF_DIR}/pcrf_task.c
   )
 
 set(MME_DIR ${OPENAIRCN_DIR}/SRC/MME_APP)
@@ -926,7 +932,7 @@ if( ITTI_ANALYZER )
 endif( ITTI_ANALYZER )
 target_link_libraries (spgw
   -Wl,--start-group
-  GTPV1U SGW S11_SGW GTPV2C UDP_SERVER ${MSC_LIB} ${ITTI_LIB} ${XML_MSG_DUMP_LIB} ${3GPP_TYPES_LIB} 
+  GTPV1U SGW PCRF S11_SGW GTPV2C UDP_SERVER ${MSC_LIB} ${ITTI_LIB} ${XML_MSG_DUMP_LIB} ${3GPP_TYPES_LIB} 
    ${3GPP_TYPES_XML_LIB} CN_UTILS HASHTABLE BSTR
   -Wl,--end-group
   pthread m rt gtpnl ${LFDS} ${CONFIG_LIBRARIES}  ${LIBXML2_LIBRARIES}  

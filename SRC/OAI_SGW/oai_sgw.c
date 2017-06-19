@@ -70,6 +70,7 @@
 #include "spgw_config.h"
 #include "gtpv1u_sgw_defs.h"
 #include "sgw_defs.h"
+#include "pcrf_defs.h"
 #include "s11_sgw.h"
 #include "oai_sgw.h"
 #include "pid_file.h"
@@ -148,6 +149,7 @@ main (
   MSC_INIT (MSC_SP_GW, THREAD_MAX + TASK_MAX);
   CHECK_INIT_RETURN (udp_init ());
   CHECK_INIT_RETURN (s11_sgw_init (&spgw_config.sgw_config));
+  CHECK_INIT_RETURN (pcrf_init (&spgw_config.sgw_config));
   //CHECK_INIT_RETURN (gtpv1u_init (&spgw_config));
   CHECK_INIT_RETURN (sgw_init (&spgw_config));
   /*
